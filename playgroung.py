@@ -1,8 +1,54 @@
-li = [{'source': {'id': None, 'name': 'Quartz India'}, 'author': 'William Gavin', 'title': "Lucid has 'without a doubt' surpassed Tesla as the EV industry's tech leader, CEO says", 'description': 'Tesla’s (TSLA) technology is no match for what electric vehicle startup Lucid Motors (LCID) is cooking up, CEO Peter Rawlinson says. Read more...', 'url': 'https://qz.com/lucid-evs-rawlinson-better-tech-tesla-elon-musk-gravity-1851627934', 'urlToImage': 'https://i.kinja-img.com/image/upload/c_fill,h_675,pg_1,q_80,w_1200/c1222764a7c18bebf89a47b8c713ba38.jpg', 'publishedAt': '2024-08-21T17:08:00Z', 'content': 'In This Story\r\nTeslas (TSLA) technology is no match for what electric vehicle startup Lucid Motors (LCID) is cooking up, CEO Peter Rawlinson says. \r\nClearly we have the best technology in the world. … [+2251 chars]'}, {'source': {'id': None, 'name': 'Quartz India'}, 'author': 'William Gavin', 'title': 'Trump says Elon Musk is way too busy for a White House cabinet gig — but could consult on AI', 'description': 'As much as former President Donald Trump would like Tesla (TSLA) and SpaceX CEO Elon Musk to join his potential cabinet, he’s probably just too busy. Read more...', 'url': 'https://qz.com/elon-musk-donald-trump-cabinet-tesla-ai-spacex-1851631204', 'urlToImage': 'https://i.kinja-img.com/image/upload/c_fill,h_675,pg_1,q_80,w_1200/0444b886b99b190854925321c763af22.jpg', 'publishedAt': '2024-08-26T12:29:00Z', 'content': 'In This Story\r\nAs much as former President Donald Trump would like Tesla (TSLA) and SpaceX CEO Elon Musk to join his potential cabinet, hes probably just too busy. \r\nHe wants to be involved. Now look… [+2810 chars]'}]
+import requests
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from textblob import TextBlob
+from dotenv import load_dotenv
+import os
 
-#TODO 8. - Create a new list of the first 3 article's headline and description using list comprehension.
+def configure():
+    """Load API keys"""
+    load_dotenv()
 
+configure()
 
-new_li = [(item['title'], item['description']) for item in li]
+# Configuration for APIs
+STOCK_NAME = "TSLA"
+NEWS_ENDPOINT = "https://newsapi.org/v2/everything"
 
-print(new_li)
+# News API request
+dict_newsapi = {
+    'q': STOCK_NAME,
+    'language': 'en',
+    'apiKey': os.getenv('api_key_newsapi')
+}
+
+news_response = requests.get(NEWS_ENDPOINT, dict_newsapi)
+news_response.raise_for_status()
+news_dict = news_response.json()
+
+# Sentiment Analyzers
+vader_analyzer = SentimentIntensityAnalyzer()
+
+# Storage for results
+comparison_results = []
+
+# Compare VADER and TextBlob
+for article in news_dict['articles']:
+    text = f"{article['title']} {article['description']}"
+
+    # VADER sentiment analysis
+    vader_sentiment = vader_analyzer.polarity_scores(text)['compound']
+
+    # TextBlob sentiment analysis
+    textblob_sentiment = TextBlob(text).sentiment.polarity
+
+    comparison_results.append({
+        'text': text,
+        'vader_sentiment': vader_sentiment,
+        'textblob_sentiment': textblob_sentiment
+    })
+
+# Display the comparison
+for result in comparison_results:
+    print(f"Text: {result['text'][:100]}...")  # Limiting to 100 chars for readability
+    print(f"VADER Sentiment: {result['vader_sentiment']}")
+    print(f"TextBlob Sentiment: {result['textblob_sentiment']}\n")
