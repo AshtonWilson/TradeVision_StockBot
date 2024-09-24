@@ -1,13 +1,38 @@
 import csv
 
+
 # Read portfolio from CSV and assign variables
+import csv
+
+
 def read_portfolio(file):
     with open(file, mode='r') as file:
         reader = csv.DictReader(file)
-        for row in reader:
-            balance = float(row['Balance'])
 
-            return balance, portfolio
+        # Initialize variables
+        balance = 0.0
+        portfolio = {}
+
+        for row in reader:
+            balance = float(row['Balance'])  # Get the balance from the first row
+            portfolio = {  # Build portfolio dictionary
+                'AAL': int(row['AAL']),
+                'AAPL': int(row['AAPL']),
+                'AMZN': int(row['AMZN']),
+                'CVNA': int(row['CVNA']),
+                'ETSY': int(row['ETSY']),
+                'INTC': int(row['INTC']),
+                'NVDA': int(row['NVDA']),
+                'PLTR': int(row['PLTR']),
+                'TSLA': int(row['TSLA']),
+                'WBA': int(row['WBA'])
+            }
+
+            # Since it's a portfolio file, there is only one row
+            break
+
+        return balance, portfolio
+
 
 # Update the portfolio in the CSV file
 def update_portfolio(file, balance, portfolio):
@@ -28,5 +53,3 @@ def update_portfolio(file, balance, portfolio):
             'TSLA': portfolio['TSLA'],
             'WBA': portfolio['WBA']
         })
-
-
