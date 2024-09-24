@@ -3,7 +3,7 @@ import getWeekday
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
-
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 def configure():
     """Used to load api keys, if you fork this project add your own api keys for the endpoints mentioned below"""
@@ -46,6 +46,36 @@ day_before_yesterday_price = (stock_dict["Time Series (Daily)"][day_before_previ
 positive_diff = abs(float(yesterday_price) - float(day_before_yesterday_price))
 percent_diff = (positive_diff / float(yesterday_price)) * 100
 
-# Pull out headline and article description for sentiment analysis
-text_for_parsing = [(item['title'], item['description']) for item in news_dict['articles']]
-print(text_for_parsing)
+# Sentiment analysis
+analyzer = SentimentIntensityAnalyzer()
+sentiment_scores = []
+
+# Extract news headlines and descriptions for sentiment analysis
+for article in news_dict['articles']:
+    text = f"{article['title']} {article['description']}"
+    sentiment = analyzer.polarity_scores(text)
+    sentiment_scores.append(sentiment['compound'])
+
+# Calculate the average sentiment score
+avg_sentiment = sum(sentiment_scores) / len(sentiment_scores)
+
+# Trading decision logic
+starting_balance = 20000  # Initial balance
+stock_inventory = 0     # Number of stocks owned (if any)
+
+if avg_sentiment > 0.4 and percent_diff > 2:
+    decision = "BUY"
+    quantity_to_buy = starting_balance // yesterday_price
+    stock_inventory += quantity_to_buy
+    starting_balance -= quantity_to_buy * yesterday_price
+elif avg_sentiment < -0.5 and percent_diff < -2:
+    decision = "SELL"
+    starting_balance += stock_inventory * yesterday_price
+    stock_inventory = 0
+else:
+    decision = "HOLD"
+
+# Print the decision and the updated balance
+print(f"Decision: {decision}")
+print(f"Stock Inventory: {stock_inventory}")
+print(f"Balance: ${starting_balance:.2f}")
