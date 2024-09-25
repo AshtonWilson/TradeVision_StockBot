@@ -6,6 +6,7 @@ import csv
 
 
 def read_portfolio(file):
+    """reads a portfolio and returns the balance as a float and portfolio of stocks as a dict"""
     with open(file, mode='r') as file:
         reader = csv.DictReader(file)
 
@@ -36,6 +37,7 @@ def read_portfolio(file):
 
 # Update the portfolio in the CSV file
 def update_portfolio(file, balance, portfolio):
+    """writes new values to portfolio for balance and stock holdings"""
     with open(file, mode='w', newline='') as file:
         fieldnames = ['Balance', 'AAL', 'AAPL', 'AMZN', 'CVNA', 'ETSY', 'INTC', 'NVDA', 'PLTR', 'TSLA', 'WBA']
         writer = csv.DictWriter(file, fieldnames=fieldnames)
