@@ -25,9 +25,9 @@ dict_newsapi = {'q': STOCK_NAME,
                 'language': 'en',
                 'apiKey': os.getenv('api_key_newsapi')}
 
-response = requests.get(STOCK_ENDPOINT, dict_alphavantage)
-response.raise_for_status()
-stock_dict = response.json()
+stock_response = requests.get(STOCK_ENDPOINT, dict_alphavantage)
+stock_response.raise_for_status()
+stock_dict = stock_response.json()
 
 news_response = requests.get(NEWS_ENDPOINT, dict_newsapi)
 news_response.raise_for_status()
