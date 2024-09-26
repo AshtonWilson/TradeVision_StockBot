@@ -36,7 +36,7 @@ def read_portfolio(file):
 
 
 # Update the portfolio in the CSV file
-def update_portfolio(file, balance, portfolio):
+def write_portfolio(file, balance, portfolio):
     """writes new values to portfolio for balance and stock holdings"""
     with open(file, mode='w', newline='') as file:
         fieldnames = ['Balance', 'AAL', 'AAPL', 'AMZN', 'CVNA', 'ETSY', 'INTC', 'NVDA', 'PLTR', 'TSLA', 'WBA']
