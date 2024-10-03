@@ -78,26 +78,46 @@ for stock in portfolio:
     overall_performance[stock] = percent_diff
 
 # Decision-making based on overall portfolio sentiment and performance
+total_sentiment_score = 0
+stock_ratios = {}
+
+# First, calculate the total sentiment score for stocks to buy
 for stock in portfolio:
     avg_sentiment = overall_sentiment[stock]
     percent_diff = overall_performance[stock]
 
-    print(f"Stock: {stock}, Sentiment: {avg_sentiment:.2f}, Price Change: {percent_diff:.2f}%")
-# Todo fix logic so that it does not spend all the money on the first stock it wants to buy
     if avg_sentiment > 0.5 and percent_diff > 2:
-        decision = "BUY"
-        quantity_to_buy = int(balance // yesterday_price)
+        total_sentiment_score += avg_sentiment
+        stock_ratios[stock] = avg_sentiment  # Store the weighted sentiment score for this stock
+
+# Now make buying decisions based on the weighted allocation
+for stock in stock_ratios:
+    avg_sentiment = overall_sentiment[stock]
+    percent_diff = overall_performance[stock]
+
+    # Determine the ratio of balance to allocate based on sentiment score
+    allocation_ratio = stock_ratios[stock] / total_sentiment_score
+    # Calculate how much balance to allocate for this stock
+    allocated_balance = balance * allocation_ratio
+
+    # Calculate how many stocks can be bought with the allocated balance
+    quantity_to_buy = int(allocated_balance // yesterday_price)
+
+    if quantity_to_buy > 0:
         portfolio[stock] += quantity_to_buy
         balance -= quantity_to_buy * yesterday_price
-    elif avg_sentiment < -0.2 and percent_diff < -2 and portfolio[stock] > 0:
-        decision = "SELL"
-        balance += portfolio[stock] * yesterday_price
-        portfolio[stock] = 0
+        decision = "BUY"
     else:
         decision = "HOLD"
 
+    # Check if any stocks need to be sold
+    if avg_sentiment < -0.2 and percent_diff < -2 and portfolio[stock] > 0:
+        balance += portfolio[stock] * yesterday_price
+        portfolio[stock] = 0
+        decision = "SELL"
+
     # Output decision for each stock
-    print(f"{stock}: Decision: {decision}, Updated Stock: {portfolio[stock]}, Updated Balance: ${balance:.2f}")
+    print(f"Stock: {stock}, Sentiment: {avg_sentiment:.2f}, Price Change: {percent_diff:.2f}%, Decision: {decision}, Updated Stock: {portfolio[stock]}, Updated Balance: ${balance:.2f}")
 
 # Update the portfolio file after making decisions
 portfolio_handler.write_portfolio('portfolio', balance, portfolio)
